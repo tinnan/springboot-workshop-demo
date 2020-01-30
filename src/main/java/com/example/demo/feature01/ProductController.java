@@ -14,17 +14,12 @@ import javax.validation.constraints.Null;
 
 @RestController
 public class ProductController {
-    @Autowired private ProductRepository productRepo;
+
+    @Autowired private ProductSearchService searchService;
 
     @GetMapping("/product/{id}")
     public ResponseProduct getProduct(@PathVariable int id) {
-        Product prod = productRepo.findById(id);
-        ResponseProduct res = new ResponseProduct();
-        if (prod != null) {
-            res.setId(prod.getId());
-            res.setName(prod.getName());
-        }
-        return res;
+        return searchService.searchById(id);
     }
 
     @GetMapping("/product/search")

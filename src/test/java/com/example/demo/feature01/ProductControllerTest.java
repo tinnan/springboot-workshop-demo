@@ -1,36 +1,42 @@
 package com.example.demo.feature01;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
-class ProductControllerTest {
+class ProductControllerTest extends AbstractControllerTest {
     @Autowired private MockMvc mvc;
 
-    @MockBean private ProductRepository mockProductRepo;
+    @MockBean private ProductSearchService searchService;
 
     @Test
     public void testGetProduct() throws Exception {
+        // Arrange.
         String inputUrl = "/product/1";
-        int expHttpCode = 200;
-        String expResponse = "{ id:1, name: 'Product 1' }";
+        ResponseProduct mockResponse = new ResponseProduct();
+        mockResponse.setId(1);
+        mockResponse.setName("Product 1");
+        given(this.searchService.searchById(1))
+                .willReturn(mockResponse);
 
-        // Mock.
-        given(this.mockProductRepo.findById(1))
-                .willReturn(new Product(1, "Product 1"));
-
-        // Action + Assert.
+        // Action.
         this.mvc.perform(get(inputUrl))
-                .andExpect(status().is(expHttpCode))
-                .andExpect(content().json(expResponse));
+
+        // Assert.
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("Product 1")));
+
     }
 
     @Test
